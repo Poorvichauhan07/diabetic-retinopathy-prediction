@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}{{ patient.full_name }}{% endblock %}
+{% block page_heading %}Patient Profile{% endblock %}
+
+{% block content %}
+<div class="detail-layout">
+    <div class="detail-main">
+
+        <!-- Patient Card -->
+        <div class="patient-profile-card">
+            <div class="profile-header">
+                <div class="profile-avatar">{{ patient.full_name[0].upper() }}</div>
+                <div class="profile-info">
+                    <h2 class="profile-name">{{ patient.full_name }}</h2>
+                    <div class="profile-meta">
+                        Patient ID: #{{ patient.patient_id }}
+                        &nbsp;|&nbsp; Registered: {{ patient.created_at[:10] if patient.created_at else '—' }}
+                    </div>
+                </div>
+                <a href="{{ url_for('predict_page') }}" class="btn btn-primary">+ New Prediction</a>
+            </div>
+            <div class="profile-details">
+                <div class="detail-item"><span class="detail-label">Age</span><span class="detail-val">{{ patient.age or '—' }}</span></div>
+                <div class="detail-item"><span class="detail-label">Gender</span><span class="detail-val">{{ patient.gender or '—' }}</span></div>
+                <div class="detail-item"><span class="detail-label">Email</span><span class="detail-val">{{ patient.email or '—' }}</span></div>
+                <div class="detail-item"><span class="detail-label">Phone</span><span class="detail-val">{{ patient.phone or '—' }}</span></div>
+                <div class="detail-item full"><span class="detail-label">Address</span><span class="detail-val">{{ patient.address or '—' }}</span></div>
+            </div>
+        </div>
+
+        <!-- Prediction History -->
+        <div class="section-card">
+            <h3 class="section-card-title">📋 Prediction History ({{ predictions|length }})</h3>
+
+            {% if predictions %}
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Image</th>
+                            <th>Prediction</th>
+                            <th>Confidence</th>
+                            <th>Severity</th>
+                            <th>Report</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pred in predictions %}
+                        <tr>
+                            <td>{{ pred.prediction_time[:10] if pred.prediction_time else '—' }}</td>
+                            <td>{{ pred.filename or '—' }}</td>
+                            <td>
+                                <span class="class-badge class-{{ pred.predicted_class | lower | replace(' ', '-') }}">
+                                    {{ pred.predicted_class }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="mini-conf-bar">
+                                    <div class="mini-conf-fill" style="width:{{ pred.confidence }}%"></div>
+                                </div>
+                                {{ pred.confidence }}%
+                            </td>
+                            <td>{{ pred.severity_level or '—' }}</td>
+                            <td>
+                                <a href="{{ url_for('generate_report', pred_id=pred.prediction_id) }}"
+                                   class="btn-sm btn-view">📄 PDF</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state-inline">
+                <p>No predictions yet for this patient.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="detail-sidebar">
+        <div class="sidebar-actions">
+            <a href="{{ url_for('patients_page') }}" class="btn btn-outline btn-full">← Back to Patients</a>
+            <form method="POST" action="{{ url_for('delete_patient', patient_id=patient.patient_id) }}"
+                  onsubmit="return confirm('Delete this patient and ALL records?')">
+                <button type="submit" class="btn btn-danger btn-full">🗑 Delete Patient</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+
+# Model (large binary – store with Git LFS or separately)
+trained_model/*.h5
+trained_model/*.keras
+
+# Database (contains patient data)
+sql/*.db
+
+# Uploaded images (user data)
+uploads/
+!uploads/.gitkeep
+
+# Generated reports
+reports/
+!reports/.gitkeep
+
+# Dataset (too large for git)
+dataset/
+!dataset/.gitkeep
+
+# Generated charts (regenerated on run)
+static/images/*.png
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+*.out
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Environment variables
+.env
+.env.local

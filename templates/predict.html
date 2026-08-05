@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}Predict{% endblock %}
+{% block page_heading %}Retinal Image Analysis{% endblock %}
+
+{% block content %}
+<div class="predict-layout">
+
+    <!-- Left: Patient Info Form + Upload -->
+    <div class="predict-form-col">
+        <div class="form-card">
+            <div class="form-card-header">
+                <span class="form-icon">🔬</span>
+                <h2>New Prediction</h2>
+                <p>Upload a retinal fundus image for AI analysis</p>
+            </div>
+
+            <form action="{{ url_for('predict_page') }}" method="POST"
+                  enctype="multipart/form-data" id="predictForm">
+
+                <!-- Patient Info Section -->
+                <div class="form-section">
+                    <h3 class="form-section-title">👤 Patient Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group full">
+                            <label for="patient_name">Full Name <span class="req">*</span></label>
+                            <input type="text" id="patient_name" name="patient_name"
+                                   placeholder="e.g. Rajesh Kumar" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="patient_age">Age</label>
+                            <input type="number" id="patient_age" name="patient_age"
+                                   placeholder="e.g. 52" min="1" max="120">
+                        </div>
+                        <div class="form-group">
+                            <label for="patient_gender">Gender</label>
+                            <select id="patient_gender" name="patient_gender">
+                                <option value="">Select</option>
+                                <option>Male</option>
+                                <option>Female</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="patient_email">Email</label>
+                            <input type="email" id="patient_email" name="patient_email"
+                                   placeholder="patient@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="patient_phone">Phone</label>
+                            <input type="tel" id="patient_phone" name="patient_phone"
+                                   placeholder="+91 9876543210">
+                        </div>
+                        <div class="form-group full">
+                            <label for="patient_address">Address</label>
+                            <textarea id="patient_address" name="patient_address"
+                                      rows="2" placeholder="City, State"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image Upload Section -->
+                <div class="form-section">
+                    <h3 class="form-section-title">🖼 Retinal Image</h3>
+
+                    <div class="upload-zone" id="uploadZone">
+                        <input type="file" id="retinal_image" name="retinal_image"
+                               accept=".jpg,.jpeg,.png,.bmp" required hidden>
+                        <div class="upload-prompt" id="uploadPrompt">
+                            <div class="upload-icon">📤</div>
+                            <p class="upload-text">Click or drag & drop retinal image here</p>
+                            <p class="upload-sub">Supports JPG, PNG, BMP — Max 16 MB</p>
+                            <button type="button" class="btn btn-outline btn-sm"
+                                    onclick="document.getElementById('retinal_image').click()">
+                                Choose File
+                            </button>
+                        </div>
+                        <div class="upload-preview" id="uploadPreview" style="display:none">
+                            <img id="previewImg" src="" alt="Preview">
+                            <div class="preview-info">
+                                <span id="previewName" class="preview-name"></span>
+                                <button type="button" class="btn-remove" id="removeImg">✕ Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full" id="submitBtn">
+                    <span class="btn-text">🔬 Analyze Retinal Image</span>
+                    <span class="btn-loader" style="display:none">⏳ Analyzing...</span>
+                </button>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Right: Info Panel -->
+    <div class="predict-info-col">
+        <div class="info-card">
+            <h3>📋 How It Works</h3>
+            <ol class="how-list">
+                <li>Enter patient details in the form</li>
+                <li>Upload a clear retinal fundus photograph</li>
+                <li>Click "Analyze Retinal Image"</li>
+                <li>AI model processes and classifies the image</li>
+                <li>View predicted DR stage with confidence score</li>
+                <li>Download a PDF medical report</li>
+            </ol>
+        </div>
+
+        <div class="info-card tips-card">
+            <h3>💡 Image Tips</h3>
+            <ul class="tips-list">
+                <li>Use high-resolution fundus photos</li>
+                <li>Ensure image is well-lit and focused</li>
+                <li>Center the optic disc in frame</li>
+                <li>Avoid blurry or overexposed images</li>
+                <li>Recommended resolution: ≥ 512×512 px</li>
+            </ul>
+        </div>
+
+        <div class="stages-mini">
+            <h3>DR Classification</h3>
+            <div class="mini-stage"><span class="dot green"></span> No DR — No findings</div>
+            <div class="mini-stage"><span class="dot lime"></span> Mild — Microaneurysms</div>
+            <div class="mini-stage"><span class="dot orange"></span> Moderate — Vessel damage</div>
+            <div class="mini-stage"><span class="dot red"></span> Severe — Blocked vessels</div>
+            <div class="mini-stage"><span class="dot crimson"></span> Proliferative — New vessels</div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Image upload preview
+const fileInput  = document.getElementById("retinal_image");
+const uploadZone = document.getElementById("uploadZone");
+const prompt     = document.getElementById("uploadPrompt");
+const preview    = document.getElementById("uploadPreview");
+const previewImg = document.getElementById("previewImg");
+const previewName= document.getElementById("previewName");
+const removeBtn  = document.getElementById("removeImg");
+const submitBtn  = document.getElementById("submitBtn");
+
+fileInput.addEventListener("change", showPreview);
+removeBtn.addEventListener("click", clearPreview);
+
+// Drag & Drop
+uploadZone.addEventListener("dragover", e => { e.preventDefault(); uploadZone.classList.add("drag-over"); });
+uploadZone.addEventListener("dragleave", () => uploadZone.classList.remove("drag-over"));
+uploadZone.addEventListener("drop", e => {
+    e.preventDefault();
+    uploadZone.classList.remove("drag-over");
+    const files = e.dataTransfer.files;
+    if (files.length) { fileInput.files = files; showPreview(); }
+});
+
+function showPreview() {
+    const file = fileInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        previewImg.src = e.target.result;
+        previewName.textContent = file.name + " (" + (file.size/1024/1024).toFixed(2) + " MB)";
+        prompt.style.display = "none";
+        preview.style.display = "flex";
+    };
+    reader.readAsDataURL(file);
+}
+
+function clearPreview() {
+    fileInput.value = "";
+    previewImg.src = "";
+    prompt.style.display = "flex";
+    preview.style.display = "none";
+}
+
+// Show loading on submit
+document.getElementById("predictForm").addEventListener("submit", function() {
+    submitBtn.querySelector(".btn-text").style.display = "none";
+    submitBtn.querySelector(".btn-loader").style.display = "inline";
+    submitBtn.disabled = true;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,2 @@
+Trained .h5 model files are stored here after running train_model.py.
+Store large model files with Git LFS or separately.

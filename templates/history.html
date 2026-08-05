@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Prediction History{% endblock %}
+{% block page_heading %}Prediction History{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <h1 class="page-title">All Predictions</h1>
+    <a href="{{ url_for('predict_page') }}" class="btn btn-primary">+ New Prediction</a>
+</div>
+
+<div class="results-meta">{{ predictions|length }} total prediction(s)</div>
+
+{% if predictions %}
+<div class="table-wrapper">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Patient</th>
+                <th>Image</th>
+                <th>Result</th>
+                <th>Confidence</th>
+                <th>Severity</th>
+                <th>Date</th>
+                <th>Report</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pred in predictions %}
+            <tr class="table-row">
+                <td><span class="id-badge">{{ pred.prediction_id }}</span></td>
+                <td>
+                    <a href="{{ url_for('patient_detail', patient_id=pred.patient_id) }}"
+                       class="link-cell">{{ pred.full_name or '—' }}</a>
+                </td>
+                <td class="filename-cell">{{ pred.filename or '—' }}</td>
+                <td>
+                    <span class="class-badge class-{{ pred.predicted_class | lower | replace(' ', '-') }}">
+                        {{ pred.predicted_class }}
+                    </span>
+                </td>
+                <td>
+                    <div style="display:flex;align-items:center;gap:6px">
+                        <div class="mini-conf-bar">
+                            <div class="mini-conf-fill" style="width:{{ pred.confidence }}%"></div>
+                        </div>
+                        <span>{{ pred.confidence }}%</span>
+                    </div>
+                </td>
+                <td>{{ pred.severity_level or '—' }}</td>
+                <td>{{ pred.prediction_time[:10] if pred.prediction_time else '—' }}</td>
+                <td>
+                    <a href="{{ url_for('generate_report', pred_id=pred.prediction_id) }}"
+                       class="btn-sm btn-view">📄 PDF</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Distribution Chart -->
+<section class="section" style="margin-top: 2rem;">
+    <h2 class="section-title">Disease Distribution</h2>
+    <div class="chart-card">
+        <img src="{{ url_for('static', filename='images/class_distribution.png') }}"
+             alt="Distribution"
+             class="chart-img"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+        <div style="display:none; padding:2rem; text-align:center; color:#666">
+            Chart will appear after training the model.
+        </div>
+    </div>
+</section>
+
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon">📋</div>
+    <h3>No predictions yet</h3>
+    <p>Upload a retinal image on the Predict page to get started.</p>
+    <a href="{{ url_for('predict_page') }}" class="btn btn-primary">Make First Prediction</a>
+</div>
+{% endif %}
+{% endblock %}

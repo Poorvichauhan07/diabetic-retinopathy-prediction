@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Patient Records{% endblock %}
+{% block page_heading %}Patient Records{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <h1 class="page-title">Patient Records</h1>
+    <a href="{{ url_for('predict_page') }}" class="btn btn-primary">+ New Patient</a>
+</div>
+
+<!-- Search Bar -->
+<form method="GET" action="{{ url_for('patients_page') }}" class="search-form">
+    <div class="search-group">
+        <span class="search-icon">🔍</span>
+        <input type="text" name="q" value="{{ query }}"
+               placeholder="Search by name, email or phone..."
+               class="search-input">
+        <button type="submit" class="btn btn-primary">Search</button>
+        {% if query %}
+        <a href="{{ url_for('patients_page') }}" class="btn btn-ghost">Clear</a>
+        {% endif %}
+    </div>
+</form>
+
+<!-- Results count -->
+<div class="results-meta">
+    {% if query %}
+    Showing {{ patients|length }} result(s) for "<strong>{{ query }}</strong>"
+    {% else %}
+    Total {{ patients|length }} patient(s) registered
+    {% endif %}
+</div>
+
+<!-- Patients Table -->
+{% if patients %}
+<div class="table-wrapper">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#ID</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Registered</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in patients %}
+            <tr class="table-row">
+                <td><span class="id-badge">{{ p.patient_id }}</span></td>
+                <td>
+                    <div class="patient-cell">
+                        <div class="avatar">{{ p.full_name[0].upper() }}</div>
+                        <span class="patient-cell-name">{{ p.full_name }}</span>
+                    </div>
+                </td>
+                <td>{{ p.age or '—' }}</td>
+                <td>{{ p.gender or '—' }}</td>
+                <td class="email-cell">{{ p.email or '—' }}</td>
+                <td>{{ p.phone or '—' }}</td>
+                <td>{{ p.created_at[:10] if p.created_at else '—' }}</td>
+                <td>
+                    <div class="action-btns">
+                        <a href="{{ url_for('patient_detail', patient_id=p.patient_id) }}"
+                           class="btn-sm btn-view">View</a>
+                        <form method="POST"
+                              action="{{ url_for('delete_patient', patient_id=p.patient_id) }}"
+                              style="display:inline"
+                              onsubmit="return confirm('Delete this patient and all records?')">
+                            <button type="submit" class="btn-sm btn-del">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon">👥</div>
+    <h3>No patients found</h3>
+    <p>{% if query %}No results for "{{ query }}". Try a different search term.
+       {% else %}Start by submitting a new prediction to register a patient.{% endif %}</p>
+    <a href="{{ url_for('predict_page') }}" class="btn btn-primary">Make First Prediction</a>
+</div>
+{% endif %}
+{% endblock %}
