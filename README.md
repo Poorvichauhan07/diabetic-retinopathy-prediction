@@ -390,7 +390,7 @@ Always consult a qualified ophthalmologist for proper eye examination and medica
 Built as a final year AI/ML project.  
 Technologies: Python • TensorFlow • Scikit-learn • OpenCV • Flask • SQLite • HTML/CSS
 
-**GitHub:** [github.com/yourusername/dr-predict](https://github.com/yourusername/dr-predict)
+**GitHub:** [github.com/yourusername/dr-predict](https://github.com/Poorvichauhan07/dr-predict)
 
 ---
 
